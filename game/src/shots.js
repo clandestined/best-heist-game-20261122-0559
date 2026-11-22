@@ -6,10 +6,10 @@
 // and the same seed always gives the same frame.
 
 import { FIELD, STEP, THIEF } from './config.js';
-import { SCREEN_LEVEL_WIN, SCREEN_OVER, SCREEN_PLAY, SCREEN_TITLE } from './render.js';
+import { SCREEN_COVER, SCREEN_LEVEL_WIN, SCREEN_OVER, SCREEN_PLAY } from './render.js';
 import { EVENT_BUSTED, EVENT_LEVEL_WIN } from './world.js';
 
-const START_SECONDS = 5;
+const COVER_SECONDS = 7;
 const PLAY_SECONDS = 14;
 const END_LIMIT_SECONDS = 150;
 const CELL = 20;
@@ -194,8 +194,16 @@ export function createAutopilot() {
 export function stageShot(name, world) {
   world.reset();
   if (name !== 'play' && name !== 'end') {
-    for (let index = 0; index < START_SECONDS / STEP; index += 1) world.step(STEP, { x: 0, y: 0 }, false, null);
-    return { screen: SCREEN_TITLE, best: 0 };
+    // The cover: the autopilot sneaks toward the vault, so the frame shows
+    // the thief mid-room with the cones sweeping — the live room, named,
+    // with no panel hiding it.
+    const coverPilot = createAutopilot();
+    for (let index = 0; index < COVER_SECONDS / STEP; index += 1) {
+      const move = coverPilot(world.state);
+      world.step(STEP, move.dir, move.sneak, null);
+      if (world.state.busted) break;
+    }
+    return { screen: SCREEN_COVER, best: 0 };
   }
   const limit = name === 'end' ? END_LIMIT_SECONDS : PLAY_SECONDS;
   const autopilot = createAutopilot();

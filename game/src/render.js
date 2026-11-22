@@ -12,6 +12,10 @@ export const SCREEN_PAUSED = 'paused';
 export const SCREEN_OVER = 'over';
 export const SCREEN_LEVEL_WIN = 'levelwin';
 export const SCREEN_HEIST_WIN = 'heistwin';
+// The cover frame: the live room with the HUD, named for the game, used
+// only by the staged ?shot=start scene — the room, cones, vault, loot and
+// alarm meter all stay visible, with no panel over them.
+export const SCREEN_COVER = 'cover';
 
 const PANEL = { width: 640, top: 150, line: 32, bottom: 76 };
 const TILE = 80;
@@ -300,10 +304,10 @@ export function createRenderer(canvas) {
     context.fill();
   }
 
-  function drawHud(state) {
+  function drawHud(state, titleOverride) {
     context.fillStyle = 'rgba(11, 13, 22, 0.82)';
     context.fillRect(0, 0, FIELD.width, 52);
-    text(state.level.name, 24, 33, 20, PALETTE.text, 'left');
+    text(titleOverride || state.level.name, 24, 33, 20, PALETTE.text, 'left');
     text(formatTime(state.elapsed), FIELD.width / 2, 33, 20, PALETTE.text, 'center');
     text(lootLabel(state.loot), FIELD.width - 24, 33, 20, PALETTE.loot, 'right');
     // The alarm meter: a bar that fills green, then gold, then red.
@@ -336,7 +340,7 @@ export function createRenderer(canvas) {
     const height = PANEL.top + lines.length * PANEL.line + PANEL.bottom;
     const x = (FIELD.width - PANEL.width) / 2;
     const y = (FIELD.height - height) / 2;
-    context.fillStyle = 'rgba(11, 13, 22, 0.72)';
+    context.fillStyle = 'rgba(11, 13, 22, 0.58)';
     context.fillRect(0, 0, FIELD.width, FIELD.height);
     context.fillStyle = PALETTE.panel;
     context.fillRect(x, y, PANEL.width, height);
@@ -371,6 +375,12 @@ export function createRenderer(canvas) {
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.setTransform(view.scale, 0, 0, view.scale, view.x, view.y);
     drawField(state);
+    if (screen === SCREEN_COVER) {
+      // The cover: the live room and the full HUD, named for the game, with
+      // no panel hiding the cones, the vault or the loot.
+      drawHud(state, 'The Velvet Vault');
+      return;
+    }
     if (screen === SCREEN_TITLE) {
       drawPanel(
         'The Velvet Vault',

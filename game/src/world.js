@@ -142,6 +142,7 @@ export function createWorld(random) {
     elapsed: 0,
     coin: null, // { x, y, ttl } — a tossed coin lying on the floor
     busted: false,
+    bustedReason: '',
     levelWon: false,
     heistWon: false,
   };
@@ -193,6 +194,7 @@ export function createWorld(random) {
     state.elapsed = 0;
     state.coin = null;
     state.busted = false;
+    state.bustedReason = '';
     state.levelWon = false;
     state.heistWon = false;
   }
@@ -376,6 +378,7 @@ export function createWorld(random) {
       }
       if (Math.hypot(guard.x - thief.x, guard.y - thief.y) < GUARD.catchRadius) {
         state.busted = true;
+        state.bustedReason = 'A guard grabbed you in the open.';
         events |= EVENT_BUSTED;
         return events;
       }
@@ -402,6 +405,7 @@ export function createWorld(random) {
     state.peakAlarm = Math.max(state.peakAlarm, state.alarm);
     if (state.alarm >= ALARM.bustedAt) {
       state.busted = true;
+      state.bustedReason = 'The alarm hit 100 and the crew scattered.';
       events |= EVENT_BUSTED;
       return events;
     }

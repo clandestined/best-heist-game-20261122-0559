@@ -40,4 +40,4 @@ node serve.ts
 
 ## Screenshots
 
-`shots.json` lists the three staged scenes (`?shot=start|play|end&seed=1`): the title over the gallery, a mid-heist frame with cones sweeping, and a clean getaway. Each is a real render of the game's own code, taken in desktop Chrome.
+`shots.json` lists the three staged scenes (`?shot=start|play|end&seed=1`): the cover (the thief sneaking toward the vault with the cones sweeping), a mid-heist frame with the vault cracked and the getaway run, and a clean getaway. Each is a real render of the game's own code, taken in desktop Chrome.

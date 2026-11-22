@@ -109,7 +109,9 @@ function runGame() {
       best = world.state.score;
       saveBest(best);
     }
-    announce(busted ? `Busted. Score ${world.state.score}. Best ${best}.` : `Game over. Score ${world.state.score}.`);
+    announce(busted
+      ? `Busted. ${world.state.bustedReason || 'The heist is blown.'} Score ${world.state.score}. Best ${best}.`
+      : `Game over. Score ${world.state.score}.`);
   }
 
   function finishHeist() {
