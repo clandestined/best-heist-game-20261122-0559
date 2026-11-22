@@ -4,7 +4,7 @@
 // the furniture, so a crate or pillar covers the part of a cone behind it.
 // Canvas shapes and text only — every pixel is the game's own art.
 
-import { FIELD, FONT, PALETTE } from './config.js';
+import { CAMERA, FIELD, FONT, GUARD, PALETTE } from './config.js';
 
 export const SCREEN_TITLE = 'title';
 export const SCREEN_PLAY = 'play';
@@ -240,7 +240,7 @@ export function createRenderer(canvas) {
   function drawCameras(state) {
     for (let i = 0; i < state.cameras.length; i += 1) {
       const camera = state.cameras[i];
-      drawCone(camera, camera.angle, 270, 0.5, PALETTE.cameraCone, PALETTE.cameraConeEdge);
+      drawCone(camera, camera.angle, CAMERA.viewRange, CAMERA.viewHalfAngle, PALETTE.cameraCone, PALETTE.cameraConeEdge);
     }
     for (let i = 0; i < state.cameras.length; i += 1) {
       const camera = state.cameras[i];
@@ -258,7 +258,7 @@ export function createRenderer(canvas) {
       const guard = state.guards[i];
       const alerted = guard.mode !== 'patrol';
       drawCone(
-        guard, guard.face, 230, 0.62,
+        guard, guard.face, GUARD.viewRange, GUARD.viewHalfAngle,
         alerted ? PALETTE.coneAlert : PALETTE.cone,
         alerted ? PALETTE.coneAlertEdge : PALETTE.coneEdge,
       );

@@ -137,7 +137,10 @@ export const LEVELS = [
       { x: 1188, y: 360, label: 'Gold bar' },
     ],
     guards: [
-      { path: [[200, 120], [1080, 120]], speed: 72 },
+      // The top patrol dips around the vault instead of walking into it:
+      // the vault is solid, so a straight lane would pin the guard against
+      // its side for the whole heist.
+      { path: [[200, 120], [520, 120], [520, 180], [760, 180], [760, 120], [1080, 120]], speed: 72 },
       { path: [[980, 560], [420, 560]], speed: 72 },
     ],
     cameras: [
@@ -166,9 +169,12 @@ export const LEVELS = [
       { x: 640, y: 520, label: 'Emerald' },
     ],
     guards: [
-      { path: [[180, 130], [1100, 130]], speed: 82 },
-      { path: [[1100, 360], [180, 360]], speed: 82 },
-      { path: [[760, 540], [760, 220]], speed: 76 },
+      // Top patrol dips around the vault; the middle patrol dips below the
+      // two display cases, which sit on its lane; the vertical patrol runs
+      // at x=750 so it clears the case corner instead of sliding on it.
+      { path: [[180, 130], [520, 130], [520, 180], [760, 180], [760, 130], [1100, 130]], speed: 82 },
+      { path: [[1100, 360], [900, 360], [900, 420], [380, 420], [380, 360], [180, 360]], speed: 82 },
+      { path: [[750, 540], [750, 220]], speed: 76 },
     ],
     cameras: [
       { x: 90, y: 26, baseAngle: Math.PI / 2, sweep: 0.7, sweepSpeed: 0.55 },
@@ -198,9 +204,11 @@ export const LEVELS = [
       { x: 640, y: 180, label: 'Ruby' },
     ],
     guards: [
-      { path: [[170, 130], [1110, 130]], speed: 92 },
+      // Top patrol dips around the vault; the middle patrol dips below the
+      // centre case, which sits on its lane.
+      { path: [[170, 130], [520, 130], [520, 190], [760, 190], [760, 130], [1110, 130]], speed: 92 },
       { path: [[980, 560], [420, 560]], speed: 92 },
-      { path: [[300, 360], [980, 360]], speed: 86 },
+      { path: [[300, 360], [520, 360], [520, 440], [760, 440], [760, 360], [980, 360]], speed: 86 },
       { path: [[760, 540], [760, 210]], speed: 86 },
     ],
     cameras: [

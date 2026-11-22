@@ -5,7 +5,7 @@
 // vision cone covers), so the frame is what a short game really looks like
 // and the same seed always gives the same frame.
 
-import { FIELD, STEP, THIEF } from './config.js';
+import { CAMERA, FIELD, GUARD, STEP, THIEF } from './config.js';
 import { SCREEN_COVER, SCREEN_LEVEL_WIN, SCREEN_OVER, SCREEN_PLAY } from './render.js';
 import { EVENT_BUSTED, EVENT_LEVEL_WIN } from './world.js';
 
@@ -86,21 +86,38 @@ function cellCost(cx, cy, state) {
   let cost = 1;
   for (let i = 0; i < state.guards.length; i += 1) {
     const guard = state.guards[i];
-    if (inCone(guard, guard.face, 230, 0.62, point, state.solids)) cost += 60;
+    if (inCone(guard, guard.face, GUARD.viewRange, GUARD.viewHalfAngle, point, state.solids)) cost += 60;
     const dist = Math.hypot(guard.x - point.x, guard.y - point.y);
     if (dist < 70) cost += 30 * (70 - dist) / 70;
   }
   for (let i = 0; i < state.cameras.length; i += 1) {
     const camera = state.cameras[i];
-    if (inCone(camera, camera.angle, 270, 0.5, point, state.solids)) cost += 50;
+    if (inCone(camera, camera.angle, CAMERA.viewRange, CAMERA.viewHalfAngle, point, state.solids)) cost += 50;
   }
   return cost;
+}
+
+/** The nearest guard within `radius` of `point`, or null. */
+function nearestGuard(state, point, radius) {
+  let nearest = null;
+  let nearestDist = radius;
+  for (let i = 0; i < state.guards.length; i += 1) {
+    const guard = state.guards[i];
+    const dist = Math.hypot(guard.x - point.x, guard.y - point.y);
+    if (dist < nearestDist) {
+      nearestDist = dist;
+      nearest = guard;
+    }
+  }
+  return nearest;
 }
 
 /**
  * The cheapest route from `from` to `to` as a list of cell centres, or null
  * when no route exists. Dijkstra over the grid, eight neighbours, diagonal
- * steps cost a little more than straight ones.
+ * steps cost a little more than straight ones. Cells a guard's body is in
+ * are never planned through: the patrol keeps moving, so a route that is
+ * clear now can still meet one.
  */
 function findPath(from, to, state) {
   const startX = Math.floor(from.x / CELL);
@@ -138,6 +155,7 @@ function findPath(from, to, state) {
       const ny = y + DIRS[i][1];
       if (nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS) continue;
       if (cellBlocked(nx, ny, state.solids)) continue;
+      if (nearestGuard(state, { x: nx * CELL + CELL / 2, y: ny * CELL + CELL / 2 }, 45)) continue;
       const nd = d + DIRS[i][2] * cellCost(nx, ny, state);
       if (nd < (dist.get(key(nx, ny)) ?? Infinity)) {
         dist.set(key(nx, ny), nd);
@@ -177,6 +195,15 @@ export function createAutopilot() {
     }
     const nearWatcher = state.guards.some((g) => Math.hypot(g.x - state.thief.x, g.y - state.thief.y) < 320)
       || state.cameras.some((c) => Math.hypot(c.x - state.thief.x, c.y - state.thief.y) < 320);
+    // A guard closing in overrides the plan: step away from it instead of
+    // walking into a catch. The next replan picks the route back up.
+    const closeGuard = nearestGuard(state, state.thief, 70);
+    if (closeGuard) {
+      const dx = state.thief.x - closeGuard.x;
+      const dy = state.thief.y - closeGuard.y;
+      const len = Math.hypot(dx, dy) || 1;
+      return { dir: { x: dx / len, y: dy / len }, sneak: true };
+    }
     if (!path || path.length === 0) return { dir: { x: 0, y: 0 }, sneak: nearWatcher };
     const next = path[0];
     const dx = next.x - state.thief.x;
