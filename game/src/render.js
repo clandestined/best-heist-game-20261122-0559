@@ -184,7 +184,7 @@ export function createRenderer(canvas) {
       context.arc(cx, cy, 24, -Math.PI / 2, -Math.PI / 2 + state.vaultProgress * Math.PI * 2);
       context.stroke();
     }
-    // The label sits beside the vault, never over the objective line above it.
+    // The label sits beside the vault, clear of the vault itself.
     text(state.vaultOpen ? 'OPEN' : 'VAULT', vault.x + vault.w + 10, cy + 5, 15, PALETTE.vaultDoor, 'left');
   }
 
@@ -325,10 +325,30 @@ export function createRenderer(canvas) {
     context.lineWidth = 1;
     context.strokeRect(barX + 0.5, barY + 0.5, barW - 1, barH - 1);
     text(coinsLabel(state.coins), barX + barW + 16, barY + 10, 14, PALETTE.coin, 'left');
+    // The objective line sits in the open floor just above the exit, on a
+    // dark pill so it reads over the tiles: at the top it crossed the
+    // vault's gold frame, hiding the very target it names.
     const objective = !state.vaultOpen
       ? 'Crack the vault — stand beside it'
       : state.exitActive ? 'Vault cracked! Get to the green EXIT' : '';
-    if (objective) text(objective, FIELD.width / 2, 96, 17, state.exitActive ? PALETTE.exitGlow : PALETTE.vaultGlow, 'center');
+    if (objective) {
+      const objectiveSize = 17;
+      const objectiveColor = state.exitActive ? PALETTE.exitGlow : PALETTE.vaultGlow;
+      const objectiveY = FIELD.height - 92;
+      if (!fonts.has(objectiveSize)) fonts.set(objectiveSize, `bold ${objectiveSize}px ${FONT}`);
+      context.font = fonts.get(objectiveSize);
+      const objectiveWidth = context.measureText(objective).width;
+      const padX = 16;
+      const padY = 8;
+      context.fillStyle = 'rgba(11, 13, 22, 0.72)';
+      context.fillRect(
+        FIELD.width / 2 - objectiveWidth / 2 - padX,
+        objectiveY - objectiveSize - padY,
+        objectiveWidth + padX * 2,
+        objectiveSize + padY * 2 + 4,
+      );
+      text(objective, FIELD.width / 2, objectiveY, objectiveSize, objectiveColor, 'center');
+    }
     // A red wash creeps in as the alarm climbs.
     if (state.alarm > 25) {
       context.fillStyle = `rgba(255, 46, 46, ${((state.alarm - 25) / 75) * 0.16})`;
